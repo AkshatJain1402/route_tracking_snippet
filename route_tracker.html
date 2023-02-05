@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Route Tracker</title>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDcgvsuJL4-9ZIL1k7YAX2T5Uc9c8vvAMQ"></script>
+  <script>
+    var map;
+    var markers = [];
+    var route = [];
+    var startTracking = false;
+
+    function initMap() {
+      map = new google.maps.Map(document.getElementById("map"), {
+        center: {lat: 0, lng: 0},
+        zoom: 14
+      });
+
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+          var initialPos = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          };
+          map.setCenter(initialPos);
+          addMarker(initialPos, "Initial Position");
+        });
+      }
+    }
+
+    function addMarker(location, title) {
+      var marker = new google.maps.Marker({
+        position: location,
+        map: map,
+        title: title
+      });
+      markers.push(marker);
+    }
+
+    function startTrack() {
+      startTracking = true;
+      if (navigator.geolocation) {
+        navigator.geolocation.watchPosition(function(position) {
+          var currentPos = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          };
+          route.push(currentPos);
+          map.setCenter(currentPos);
+          if (route.length > 1) {
+            var line = new google.maps.Polyline({
+              path: route,
+              geodesic: true,
+              strokeColor: "#FF0000",
+              strokeOpacity: 1.0,
+              strokeWeight: 2
+            });
+            line.setMap(map);
+          }
+        });
+      }
+    }
+
+    function stopTrack() {
+      startTracking = false;
+      var lastPos = route[route.length - 1];
+      addMarker(lastPos, "Final Position");
+    }
+  </script>
+</head>
+<body onload="initMap()">
+  <div id="map" style="width:100%;height:400px;"></div>
+  <br />
+  <button onclick="startTrack()">Start Tracking</button>
+  <button onclick="stopTrack()">Stop Tracking</button>
+</body>
+</html>
